@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Е-Дневник</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --teal: #2dbfad; --teal-dark: #1a9e8e; --teal-bg: #e6faf8;
+  --blue: #1976d2; --blue-light: #e3f2fd; --blue-mid: #1565c0;
+  --green: #2e7d32; --green-light: #e8f5e9;
+  --red: #c62828; --red-light: #ffebee;
+  --orange: #e65100; --orange-light: #fff3e0;
+  --gray: #546e7a; --gray-light: #f5f7fa; --gray-mid: #eceff1;
+  --border: #dde2e8; --navy: #1e2a38;
+  --text: #1e2a38; --text2: #7a8fa6;
+  --white: #fff;
+  --sw: 240px;
+  --th: 52px;
+  --shadow: 0 1px 4px rgba(0,0,0,0.10);
+}
+body { font-family: 'Inter', sans-serif; font-size: 13px; color: var(--text); background: #f0f2f5; min-height: 100vh; }
+
+/* LAYOUT */
+.layout { display: flex; min-height: 100vh; }
+.sidebar { width: var(--sw); background: #1e2a38; color: #fff; position: fixed; top: 0; left: 0; bottom: 0; z-index: 200; display: flex; flex-direction: column; }
+.sb-logo { display: flex; align-items: center; gap: 10px; padding: 0 16px; height: var(--th); border-bottom: 1px solid rgba(255,255,255,0.08); background: #161f2b; flex-shrink:0; }
+.sb-logo-icon { width:30px;height:30px;border-radius:7px;background:var(--teal);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0; }
+.sb-logo-name { font-size: 15px; font-weight: 800; }
+.sb-logo-school { font-size: 10px; color: rgba(255,255,255,0.45); }
+.sb-user { display: flex; align-items: center; gap: 8px; padding: 9px 14px; border-bottom: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.12); }
+.sb-av { width: 28px; height: 28px; border-radius: 50%; background: var(--teal); display:flex;align-items:center;justify-content:center; font-weight:700; font-size:11px; flex-shrink:0; }
+.sb-uname { font-size: 11.5px; font-weight: 600; }
+.sb-urole { font-size: 10px; color: rgba(255,255,255,0.4); }
+.sb-nav { flex: 1; overflow-y: auto; padding: 6px 0; }
+.sb-sec { padding: 10px 14px 3px; font-size: 9px; font-weight: 700; letter-spacing: 1.3px; text-transform: uppercase; color: rgba(255,255,255,0.28); }
+.sb-item { display: flex; align-items: center; gap: 9px; padding: 9px 16px; cursor: pointer; font-size: 12.5px; font-weight: 500; color: rgba(255,255,255,0.65); transition: all 0.13s; border-left: 3px solid transparent; }
+.sb-item:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.9); }
+.sb-item.active { background: rgba(45,191,173,0.15); color: var(--teal); border-left-color: var(--teal); font-weight: 600; }
+.sb-item .si { font-size: 15px; width: 18px; text-align: center; }
+.sb-badge { margin-left: auto; background: #ef5350; color: #fff; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 99px; min-width:16px;text-align:center; }
+
+.main { margin-left: var(--sw); flex: 1; display: flex; flex-direction: column; }
+.topbar { height: var(--th); background: #1e2a38; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; padding: 0 20px; gap: 12px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+.tb-year { display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:5px 12px;cursor:pointer;font-size:12.5px;font-weight:600;color:#fff; }
+.tb-year:hover { background:rgba(255,255,255,0.15); }
+.tb-school { display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:rgba(255,255,255,0.8); }
+.tb-spacer { flex:1; }
+.tb-search { display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.12); border-radius: 5px; padding: 5px 10px; width: 190px; }
+.tb-search input { border:none;background:transparent;outline:none;font-family:inherit;font-size:12px;width:100%;color:#fff; }
+.tb-search input::placeholder { color:rgba(255,255,255,0.35); }
+.tb-bell { width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:rgba(255,255,255,0.8);position:relative; }
+.tb-bell:hover { background:rgba(255,255,255,0.18); }
+.tb-bell-dot { position:absolute;top:7px;right:7px;width:7px;height:7px;background:#ef5350;border-radius:50%;border:1.5px solid #1e2a38; }
+.tb-btn { display:inline-flex;align-items:center;gap:5px; padding:6px 14px; border-radius:6px; border:none; cursor:pointer; font-family:inherit; font-size:12px; font-weight:600; transition:all .13s; }
+.tb-btn.primary { background: var(--teal); color:#fff; }
+.tb-btn.primary:hover { background: var(--teal-dark); }
+.tb-user { display:flex;align-items:center;gap:7px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:20px;padding:4px 10px 4px 4px;cursor:pointer; }
+.tb-user:hover { background:rgba(255,255,255,0.17); }
+.tb-av { width:26px;height:26px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:10px;flex-shrink:0; }
+.tb-uname { font-size:12px;font-weight:600;color:#fff; }
+.tb-uarrow { font-size:10px;color:rgba(255,255,255,0.45); }
+
+.content { padding: 14px 18px; flex:1; }
+.page { display:none; }
+.page.active { display:block; }
+.ph { display:flex;align-items:center;justify-content:space-between;margin-bottom:12px; }
+.ph-title { font-size:14px;font-weight:700; }
+.ph-sub { font-size:10.5px;color:var(--text2);margin-top:1px; }
+
+/* CARD */
+.card { background:#fff;border:1px solid var(--border);border-radius:5px;box-shadow:var(--shadow);overflow:hidden; }
+.card-hd { padding:9px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:#fafbfc; }
+.card-title { font-size:12.5px;font-weight:700; }
+.card-body { padding:12px 14px; }
+
+/* STATS */
+.stats-row { display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px; }
+.stat { background:#fff;border:1px solid var(--border);border-radius:5px;padding:12px 14px;position:relative;overflow:hidden;box-shadow:var(--shadow); }
+.stat::after { content:'';position:absolute;top:0;left:0;right:0;height:3px; }
+.stat.sb::after{background:var(--teal);}.stat.sg::after{background:var(--green);}.stat.sr::after{background:var(--red);}.stat.so::after{background:var(--orange);}
+.stat-lbl { font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px; }
+.stat-val { font-size:24px;font-weight:800;line-height:1; }
+.stat-ico { position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:26px;opacity:.07; }
+
+/* TABLE */
+.tbl-wrap { overflow-x:auto; }
+table { width:100%;border-collapse:collapse; }
+thead th { padding:7px 11px;text-align:left;font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;background:#f5f7fa;border-bottom:2px solid var(--border);white-space:nowrap; }
+tbody tr { border-bottom:1px solid #f0f2f4; }
+tbody tr:hover { background:#f4fffe; }
+tbody td { padding:8px 11px;font-size:12px;vertical-align:middle; }
+tbody tr:last-child { border-bottom:none; }
+
+/* BADGES */
+.badge { display:inline-flex;align-items:center;padding:2px 7px;border-radius:3px;font-size:10.5px;font-weight:600; }
+.bg-green{background:var(--green-light);color:var(--green);}
+.bg-red{background:var(--red-light);color:var(--red);}
+.bg-blue{background:var(--blue-light);color:var(--blue);}
+.bg-orange{background:var(--orange-light);color:var(--orange);}
+.bg-gray{background:var(--gray-mid);color:var(--gray);}
+.bg-teal{background:var(--teal-bg);color:var(--teal-dark);}
+.bg-purple{background:#ede7f6;color:#6a1b9a;}
+
+/* GRADE BUBBLES */
+.gb{width:28px;height:28px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;}
+.gb-6{background:#c8e6c9;color:#2e7d32;}.gb-5{background:#bbdefb;color:#1565c0;}.gb-4{background:#fff9c4;color:#f57f17;}.gb-3{background:#ffe0b2;color:#e65100;}.gb-2{background:#ffcdd2;color:#c62828;}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:4px;border:none;cursor:pointer;font-family:inherit;font-size:11.5px;font-weight:600;transition:all .13s;}
+.btn-p{background:var(--teal);color:#fff;}.btn-p:hover{background:var(--teal-dark);}
+.btn-s{background:#388e3c;color:#fff;}.btn-s:hover{background:var(--green);}
+.btn-d{background:#d32f2f;color:#fff;}.btn-d:hover{background:var(--red);}
+.btn-g{background:var(--gray-light);color:var(--text);border:1px solid var(--border);}.btn-g:hover{background:var(--gray-mid);}
+.btn-sm{padding:4px 9px;font-size:11px;} .btn-xs{padding:2px 6px;font-size:10px;}
+
+/* FORMS */
+.form-row{display:grid;gap:10px;margin-bottom:10px;}.form-row.c2{grid-template-columns:1fr 1fr;}.form-row.c3{grid-template-columns:1fr 1fr 1fr;}
+.form-grp{display:flex;flex-direction:column;gap:3px;}
+.form-lbl{font-size:10.5px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;}
+.form-ctrl{padding:7px 9px;border:1px solid var(--border);border-radius:4px;font-family:inherit;font-size:12.5px;outline:none;transition:border-color .13s;}
+.form-ctrl:focus{border-color:var(--teal);}
+select.form-ctrl{cursor:pointer;}
+textarea.form-ctrl{resize:vertical;}
+
+/* TABS */
+.tabs{display:flex;border-bottom:2px solid var(--border);margin-bottom:12px;}
+.tab{padding:7px 14px;font-size:11.5px;font-weight:600;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .13s;}
+.tab.active{color:var(--teal);border-bottom-color:var(--teal);}
+.tab:hover:not(.active){color:var(--text);}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.42);z-index:500;align-items:center;justify-content:center;}
+.modal-bg.open{display:flex;}
+.modal{background:#fff;border-radius:6px;width:90%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 6px 30px rgba(0,0,0,0.2);animation:pop .18s ease;}
+@keyframes pop{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.modal-hd{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.modal-title{font-size:13.5px;font-weight:700;}
+.modal-x{width:24px;height:24px;border-radius:50%;border:none;background:var(--gray-mid);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;}
+.modal-body{padding:16px;}
+.modal-ft{padding:10px 16px;display:flex;gap:7px;justify-content:flex-end;border-top:1px solid var(--border);}
+
+/* TOAST */
+.toast{position:fixed;bottom:18px;right:18px;background:#1e2a38;color:#fff;padding:9px 16px;border-radius:5px;font-size:12.5px;font-weight:500;z-index:9999;transform:translateY(60px);opacity:0;transition:all .28s;box-shadow:0 3px 12px rgba(0,0,0,0.22);}
+.toast.show{transform:translateY(0);opacity:1;}
+
+/* МОЯТ ЧАС — Shkolo style */
+.mc-bar{
+  display:flex;align-items:center;gap:0;
+  background:#fff;border:1px solid var(--border);
+  border-radius:8px;margin-bottom:0;
+  box-shadow:0 1px 6px rgba(0,0,0,0.07);
+  flex-wrap:wrap;overflow:hidden;
+}
+.mc-bar-top{
+  display:flex;align-items:center;width:100%;
+  padding:8px 14px;gap:6px;border-bottom:1px solid var(--border);
+  flex-wrap:wrap;
+}
+.mc-bar-bottom{
+  display:flex;align-items:center;width:100%;
+  padding:6px 14px;gap:10px;flex-wrap:wrap;
+}
+.mc-sep{width:1px;height:22px;background:var(--border);flex-shrink:0;margin:0 4px;}
+.mc-chip-lbl{font-size:12px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:4px;}
+.mc-chip-lbl strong{font-weight:700;color:var(--text);}
+.mc-chip-lbl select,.mc-chip-lbl input[type=date]{
+  border:none;outline:none;font-family:inherit;font-size:12px;font-weight:600;
+  color:var(--text);background:transparent;cursor:pointer;
+}
+.mc-subj-wrap{display:flex;align-items:center;gap:4px;}
+.mc-subj-wrap select{
+  border:none;outline:none;font-family:inherit;font-size:12px;font-weight:600;
+  color:var(--text);background:transparent;cursor:pointer;
+  appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 2px center;
+  padding-right:14px;
+}
+.mc-date-wrap input[type=date]{
+  border:none;outline:none;font-family:inherit;font-size:12px;font-weight:600;
+  color:var(--text);background:transparent;cursor:pointer;
+}
+.mc-abs-label{font-size:12px;font-weight:500;color:var(--text);}
+.mc-bar-actions{margin-left:auto;display:flex;gap:7px;align-items:center;}
+.mc-btn-all{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:6px 13px;border-radius:6px;border:1.5px solid var(--border);
+  background:#fff;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;
+  color:var(--text);transition:all .13s;
+}
+.mc-btn-all:hover{background:var(--gray-light);}
+.mc-btn-save{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:7px 15px;border-radius:6px;border:none;
+  background:var(--teal);color:#fff;cursor:pointer;
+  font-family:inherit;font-size:12px;font-weight:700;
+  box-shadow:0 2px 6px rgba(45,191,173,0.35);transition:all .13s;
+}
+.mc-btn-save:hover{background:var(--teal-dark);}
+.mc-sum{display:flex;gap:8px;margin:8px 0 10px;flex-wrap:wrap;}
+.mc-s{padding:4px 12px;border-radius:4px;font-size:11.5px;font-weight:700;}
+
+/* Attendance toggle buttons */
+.att-btn{
+  min-width:90px;height:30px;border-radius:6px;
+  border:1.5px solid var(--border);background:#fff;
+  cursor:pointer;font-size:11.5px;font-weight:700;
+  display:inline-flex;align-items:center;justify-content:center;gap:5px;
+  transition:all .15s;color:var(--gray);
+  user-select:none; padding:0 10px;
+}
+.att-btn:hover{filter:brightness(0.95);transform:scale(1.03);}
+.att-btn:active{transform:scale(0.97);}
+.att-btn.ap{background:#e8f5e9;border-color:#4caf50;color:#2e7d32;}
+.att-btn.aa{background:#ffcdd2;border-color:#ef5350;color:#c62828;}
+.att-btn.al{background:#fff9c4;border-color:#ffca28;color:#f57f17;}
+.att-btn.ae{background:#e1bee7;border-color:#ab47bc;color:#7b1fa2;}
+
+.mc-gsel{width:44px;height:26px;border:1.5px solid var(--border);border-radius:3px;font-family:inherit;font-weight:700;font-size:13px;text-align:center;cursor:pointer;background:#fff;outline:none;}
+.icon-btn{width:24px;height:24px;border-radius:3px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:12px;display:inline-flex;align-items:center;justify-content:center;transition:all .11s;}
+.icon-btn:hover{background:var(--gray-light);}
+
+/* Grade modal */
+.grade-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:4px;}
+.grade-opt{padding:9px 0;border-radius:4px;border:1.5px solid var(--border);font-family:inherit;font-weight:800;font-size:17px;cursor:pointer;background:#fff;transition:all .11s;}
+.grade-opt:hover{border-color:var(--teal);color:var(--teal);}
+.grade-opt.sel{border-color:var(--teal);background:var(--teal-bg);color:var(--teal-dark);}
+
+/* Remark cards */
+.rem-card{border-radius:4px;padding:10px 12px;margin-bottom:7px;border-left:3px solid;}
+.rem-card.praise{background:#f1f8e9;border-color:#7cb342;}
+.rem-card.remark{background:#ffebee;border-color:#ef5350;}
+.rem-card.note{background:#fffde7;border-color:#ffd54f;}
+
+/* Schedule */
+.sch-hd{background:#1e2a38;color:#fff;padding:7px 5px;text-align:center;font-size:10px;font-weight:700;}
+.sch-time{background:#f5f7fa;padding:5px;text-align:center;font-size:9.5px;font-weight:600;color:var(--text2);display:flex;align-items:center;justify-content:center;}
+.sch-cell{background:#fff;padding:3px;min-height:44px;display:flex;align-items:center;justify-content:center;}
+.sch-subj{border-radius:3px;padding:3px 4px;font-size:9.5px;font-weight:700;text-align:center;width:100%;}
+.sc-math{background:#e3f2fd;color:#1565c0;}.sc-bg{background:#fce4ec;color:#880e4f;}.sc-hist{background:#fff8e1;color:#e65100;}
+.sc-bio{background:#e8f5e9;color:#1b5e20;}.sc-chem{background:#ede7f6;color:#4527a0;}.sc-phys{background:#fbe9e7;color:#bf360c;}
+.sc-geo{background:#e0f2f1;color:#004d40;}.sc-eng{background:#e1f5fe;color:#01579b;}.sc-it{background:#f3e5f5;color:#6a1b9a;}
+
+.empty{text-align:center;padding:28px;color:var(--text2);}
+.empty-ico{font-size:32px;margin-bottom:6px;}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.15);border-radius:99px}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-icon">📚</div>
+    <div><div class="sb-logo-name">Е-Дневник</div><div class="sb-logo-school">ОУ „Христо Ботев"</div></div>
+  </div>
+  <div class="sb-user">
+    <div class="sb-av">ИП</div>
+    <div><div class="sb-uname">__USERNAME__</div><div class="sb-urole">Учител · 7А клас</div></div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-sec">Начало</div>
+    <div class="sb-item active" onclick="nav('dashboard',this)"><span class="si">🏠</span> Табло</div>
+    <div class="sb-item" onclick="nav('students',this)"><span class="si">👥</span> Ученици</div>
+    <div class="sb-sec">Учебен процес</div>
+    <div class="sb-item" onclick="nav('myclass',this)"><span class="si">🎓</span> Моят час</div>
+    <div class="sb-item" onclick="nav('grades',this)"><span class="si">📊</span> Оценки</div>
+    <div class="sb-item" onclick="nav('attendance',this)"><span class="si">📋</span> Присъствия</div>
+    <div class="sb-item" onclick="nav('schedule',this)"><span class="si">📅</span> Разписание</div>
+    <div class="sb-item" onclick="nav('remarks',this)"><span class="si">💬</span> Похвали & Забележки <span class="sb-badge" id="remBadge">2</span></div>
+    <div class="sb-sec">Комуникация</div>
+    <div class="sb-item" onclick="nav('messages',this)"><span class="si">✉️</span> Съобщения <span class="sb-badge">2</span></div>
+    <div class="sb-item" onclick="nav('announcements',this)"><span class="si">📢</span> Обявления</div>
+    <div class="sb-sec">Управление</div>
+    <div class="sb-item" onclick="nav('subjects',this)"><span class="si">📖</span> Предмети</div>
+    <div class="sb-item" onclick="nav('settings',this)"><span class="si">⚙️</span> Настройки</div>
+  </nav>
+</aside>
+
+<!-- ── MAIN ── -->
+<main class="main">
+  <header class="topbar">
+    <div class="tb-year">2025/2026 <span style="font-size:10px;color:rgba(255,255,255,0.5);">▾</span></div>
+    <div class="tb-school">🏫 Електронен дневник</div>
+    <div class="tb-spacer"></div>
+    <div class="tb-search"><span style="color:rgba(255,255,255,0.4);">🔍</span><input type="text" placeholder="Търси ученик..." id="searchInput" oninput="handleSearch(this.value)"></div>
+    <button class="tb-btn primary" onclick="quickAdd()">+ Добави</button>
+    <div class="tb-bell">🔔<div class="tb-bell-dot"></div></div>
+    <div class="tb-user">
+      <div class="tb-av">__INITIALS__</div>
+      <span class="tb-uname">__USERNAME__</span>
+      <span class="tb-uarrow">▾</span>
+    </div>
+    <a href="/logout" style="display:flex;align-items:center;padding:6px 10px;border-radius:6px;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);text-decoration:none;font-size:12px;font-weight:600;gap:4px;transition:background .13s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">⏻ Изход</a>
+  </header>
+  <div id="pageTitle" style="display:none;"></div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="stats-row">
+        <div class="stat sb"><div class="stat-lbl">Ученици</div><div class="stat-val" id="st-s">0</div><div class="stat-ico">👥</div></div>
+        <div class="stat sg"><div class="stat-lbl">Средна оценка</div><div class="stat-val" id="st-a">—</div><div class="stat-ico">📊</div></div>
+        <div class="stat sr"><div class="stat-lbl">Отсъствия днес</div><div class="stat-val" id="st-ab">0</div><div class="stat-ico">❌</div></div>
+        <div class="stat so"><div class="stat-lbl">Забележки</div><div class="stat-val" id="st-r">0</div><div class="stat-ico">⚠️</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+        <div class="card">
+          <div class="card-hd"><span class="card-title">Последни оценки</span><button class="btn btn-g btn-sm" onclick="nav('grades',null)">Всички →</button></div>
+          <div class="tbl-wrap"><table><thead><tr><th>Ученик</th><th>Предмет</th><th>Оц.</th><th>Дата</th></tr></thead><tbody id="dash-grades"></tbody></table></div>
+        </div>
+        <div class="card">
+          <div class="card-hd"><span class="card-title">Похвали & Забележки</span><button class="btn btn-g btn-sm" onclick="nav('remarks',null)">Всички →</button></div>
+          <div id="dash-rem" style="padding:8px 12px;"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><span class="card-title">🏆 Класация</span></div>
+        <div class="tbl-wrap"><table><thead><tr><th>#</th><th>Ученик</th><th>Клас</th><th>Среден успех</th><th>Отсъствия</th><th>Похвали</th></tr></thead><tbody id="dash-rank"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- STUDENTS -->
+    <div class="page" id="page-students">
+      <div class="ph"><div><div class="ph-title">👥 Ученици</div><div class="ph-sub" id="stu-lbl"></div></div><button class="btn btn-p" onclick="openAddStu()">+ Добави ученик</button></div>
+      <div class="card"><div class="tbl-wrap"><table>
+        <thead><tr><th>Ученик</th><th>Клас</th><th>Имейл</th><th>Родители</th><th>Ср. оценка</th><th>Отсъствия</th><th>Статус</th><th></th></tr></thead>
+        <tbody id="stu-table"></tbody>
+      </table></div></div>
+    </div>
+
+    <!-- МОЯТ ЧАС -->
+    <div class="page" id="page-myclass">
+      <!-- Toolbar — Shkolo style -->
+      <div class="mc-bar">
+        <!-- Top row -->
+        <div class="mc-bar-top">
+          <div class="mc-chip-lbl">🎓 <strong>7А</strong></div>
+          <div class="mc-sep"></div>
+          <div class="mc-chip-lbl">
+            <span style="color:var(--text2);font-weight:500;">Предмет:</span>
+            <div class="mc-subj-wrap">
+              <select id="mc-subj" onchange="mcRefresh()"></select>
+            </div>
+          </div>
+          <div class="mc-sep"></div>
+          <div class="mc-chip-lbl mc-date-wrap">
+            📅 <input type="date" id="mc-date" onchange="mcRefresh()">
+          </div>
+          <div class="mc-sep"></div>
+          <div class="mc-abs-label">
+            Маркирани като отсъстващи: <strong id="mc-abs" style="color:var(--red);">0</strong>
+          </div>
+          <div class="mc-bar-actions">
+            <button class="mc-btn-all" onclick="mcMarkAll('present')">✓ Всички присъстват</button>
+            <button class="mc-btn-save" onclick="openM('m-save-confirm')">💾 Запази присъствието</button>
+          </div>
+        </div>
+        <!-- Тема row -->
+        <div style="display:flex;align-items:center;gap:8px;width:100%;padding:7px 14px;border-bottom:1px solid var(--border);background:#fafbfc;">
+          <span style="font-size:12px;font-weight:500;color:var(--text2);white-space:nowrap;">📝 Тема на урока:</span>
+          <input id="mc-tema" type="text" placeholder="Въведете тема на урока..." style="flex:1;border:1px solid var(--border);border-radius:5px;padding:5px 10px;font-family:inherit;font-size:12px;outline:none;background:#fff;color:var(--text);transition:border-color .13s;" onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--border)'">
+        </div>
+        <!-- Bottom summary row -->
+        <div class="mc-bar-bottom">
+          <div class="mc-s bg-green" id="mc-cp">✓ Присъства: 0</div>
+          <div class="mc-s bg-red" id="mc-ca">✗ Отсъства: 0</div>
+          <div class="mc-s" style="background:#fff9c4;color:#f57f17;" id="mc-cl">⏰ Закъснение: 0</div>
+          <div class="mc-s bg-purple" id="mc-ce">📋 Извинено: 0</div>
+        </div>
+      </div>
+      <div style="margin-bottom:10px;"></div>
+      <!-- Main class table -->
+      <div class="card">
+        <div class="card-hd" style="padding:7px 13px;">
+          <span class="card-title">Списък на класа</span>
+          <span style="font-size:10.5px;color:var(--text2);" id="mc-tot"></span>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th style="width:28px;">#</th>
+              <th>Ученик</th>
+              <th style="text-align:center;">Отс. общо</th>
+              <th style="text-align:center;">Присъствие</th>
+              <th style="text-align:center;color:var(--blue);">Текуща оценка</th>
+              <th style="text-align:center;">Бележки</th>
+            </tr></thead>
+            <tbody id="mc-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- GRADES -->
+    <div class="page" id="page-grades">
+      <div class="ph"><div class="ph-title">📊 Оценки</div><button class="btn btn-p" onclick="openAddGrade()">+ Добави оценка</button></div>
+      <div class="card" style="margin-bottom:10px;">
+        <div class="card-body" style="display:flex;gap:8px;flex-wrap:wrap;padding:9px 13px;">
+          <select class="form-ctrl" style="width:160px;" id="gf-s" onchange="renderGradesTable()"><option value="">Всички ученици</option></select>
+          <select class="form-ctrl" style="width:150px;" id="gf-sb" onchange="renderGradesTable()"><option value="">Всички предмети</option></select>
+          <select class="form-ctrl" style="width:130px;" id="gf-p" onchange="renderGradesTable()"><option value="">Всички периоди</option><option>I срок</option><option>II срок</option><option>Годишна</option></select>
+        </div>
+      </div>
+      <div class="card"><div class="tbl-wrap"><table>
+        <thead><tr><th>Ученик</th><th>Предмет</th><th>Оценка</th><th>Вид</th><th>Период</th><th>Дата</th><th>Учител</th><th></th></tr></thead>
+        <tbody id="grades-table"></tbody>
+      </table></div></div>
+    </div>
+
+    <!-- ATTENDANCE -->
+    <div class="page" id="page-attendance">
+      <div class="ph"><div class="ph-title">📋 Присъствия</div><button class="btn btn-p" onclick="nav('myclass',null)">📝 Отбележи в Моят час</button></div>
+      <div class="card" id="att-panel"></div>
+    </div>
+
+    <!-- SCHEDULE -->
+    <div class="page" id="page-schedule">
+      <div class="ph"><div class="ph-title">📅 Седмично разписание — 7А</div></div>
+      <div class="card"><div class="card-body" style="padding:10px;"><div id="sch-grid"></div></div></div>
+    </div>
+
+    <!-- REMARKS -->
+    <div class="page" id="page-remarks">
+      <div class="ph"><div class="ph-title">💬 Похвали & Забележки</div><button class="btn btn-p" onclick="openAddRem()">+ Добави</button></div>
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('all',this)">Всички</div>
+        <div class="tab" onclick="switchTab('praise',this)">⭐ Похвали</div>
+        <div class="tab" onclick="switchTab('remark',this)">⚠️ Забележки</div>
+        <div class="tab" onclick="switchTab('note',this)">📝 Бележки</div>
+      </div>
+      <div id="rem-panel"></div>
+    </div>
+
+    <!-- MESSAGES -->
+    <div class="page" id="page-messages">
+      <div class="ph"><div class="ph-title">✉️ Съобщения</div><button class="btn btn-p" onclick="openNewMsg()">+ Ново</button></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="card"><div class="card-hd"><span class="card-title">Входяща кутия</span></div><div id="msg-list" style="padding:6px;"></div></div>
+        <div class="card"><div class="card-hd"><span class="card-title">Преглед</span></div><div id="msg-view" class="card-body"><div class="empty"><div class="empty-ico">📩</div><div>Изберете съобщение</div></div></div></div>
+      </div>
+    </div>
+
+    <!-- ANNOUNCEMENTS -->
+    <div class="page" id="page-announcements">
+      <div class="ph"><div class="ph-title">📢 Обявления</div><button class="btn btn-p" onclick="openNewAnn()">+ Ново</button></div>
+      <div id="ann-panel"></div>
+    </div>
+
+    <!-- SUBJECTS -->
+    <div class="page" id="page-subjects">
+      <div class="ph"><div class="ph-title">📖 Предмети</div><button class="btn btn-p" onclick="openAddSubj()">+ Добави</button></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;" id="subj-grid"></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page" id="page-settings">
+      <div class="ph"><div class="ph-title">⚙️ Настройки</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="card"><div class="card-hd"><span class="card-title">Профил на класа</span></div><div class="card-body">
+          <div class="form-row"><div class="form-grp"><label class="form-lbl">Клас</label><input class="form-ctrl" value="7А"></div></div>
+          <div class="form-row"><div class="form-grp"><label class="form-lbl">Учебна година</label><input class="form-ctrl" value="2024/2025"></div></div>
+          <div class="form-row"><div class="form-grp"><label class="form-lbl">Учител</label><input class="form-ctrl" value="Иван Петров"></div></div>
+          <button class="btn btn-p btn-sm" onclick="toast('Запазено!','✅')">Запази</button>
+        </div></div>
+        <div class="card"><div class="card-hd"><span class="card-title">Известия</span></div><div class="card-body" style="display:flex;flex-direction:column;gap:10px;">
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;"><input type="checkbox" checked> Нови оценки</label>
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;"><input type="checkbox" checked> Отсъствия</label>
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;"><input type="checkbox"> Седмичен отчет</label>
+        </div></div>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ── MODALS ── -->
+<!-- Save Attendance Confirm Modal -->
+<div class="modal-bg" id="m-save-confirm">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-hd">
+      <span class="modal-title">💾 Запази присъствието</span>
+      <button class="modal-x" onclick="closeM('m-save-confirm')">✕</button>
+    </div>
+    <div class="modal-body" style="text-align:center;padding:24px 20px;">
+      <div style="font-size:36px;margin-bottom:12px;">📋</div>
+      <div style="font-size:13.5px;font-weight:700;margin-bottom:6px;">Сигурни ли сте?</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.6;">
+        Ще запазите присъствието и оценките за <strong id="confirm-date-label"></strong>.<br>
+        Това действие може да бъде променено по-късно.
+      </div>
+    </div>
+    <div class="modal-ft" style="justify-content:center;gap:10px;">
+      <button class="btn btn-g" style="min-width:110px;" onclick="closeM('m-save-confirm')">← Върни се</button>
+      <button class="btn btn-p" style="min-width:110px;background:var(--teal);" onclick="closeM('m-save-confirm');mcSave()">✓ Продължи</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="m-stu">
+  <div class="modal">
+    <div class="modal-hd"><span class="modal-title">👥 Добави ученик</span><button class="modal-x" onclick="closeM('m-stu')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row c2"><div class="form-grp"><label class="form-lbl">Собствено</label><input class="form-ctrl" id="s-fi" placeholder="Иван"></div><div class="form-grp"><label class="form-lbl">Фамилно</label><input class="form-ctrl" id="s-la" placeholder="Петров"></div></div>
+      <div class="form-row c2"><div class="form-grp"><label class="form-lbl">Клас</label><select class="form-ctrl" id="s-cl"><option>7А</option><option>7Б</option><option>8А</option><option>8Б</option></select></div><div class="form-grp"><label class="form-lbl">Пол</label><select class="form-ctrl" id="s-ge"><option>Мъжки</option><option>Женски</option></select></div></div>
+      <div class="form-row"><div class="form-grp"><label class="form-lbl">Имейл</label><input class="form-ctrl" id="s-em" type="email" placeholder="ivan@mail.bg"></div></div>
+      <div class="form-row c2"><div class="form-grp"><label class="form-lbl">Родител 1</label><input class="form-ctrl" id="s-p1" placeholder="Трите имена"></div><div class="form-grp"><label class="form-lbl">Родител 2</label><input class="form-ctrl" id="s-p2" placeholder="Трите имена"></div></div>
+      <div class="form-row c2"><div class="form-grp"><label class="form-lbl">Телефон</label><input class="form-ctrl" id="s-ph" placeholder="+359 88..."></div><div class="form-grp"><label class="form-lbl">Адрес</label><input class="form-ctrl" id="s-ad" placeholder="ул. ..."></div></div>
+    </div>
+    <div class="modal-ft"><button class="btn btn-g" onclick="closeM('m-stu')">Отказ</button><button class="btn btn-p" onclick="addStu()">✓ Добави</button></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="m-gr">
+  <div class="modal">
+    <div class="modal-hd"><span class="modal-title">📊 Добави оценка</span><button class="modal-x" onclick="closeM('m-gr')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row"><div class="form-grp"><label class="form-lbl">Ученик</label><select class="form-ctrl" id="g-s"></select></div></div>
+      <div class="form-row c2"><div class="form-grp"><label class="form-lbl">Предмет</label><select class="form-ctrl" id="g-sb"></select></div><div class="form-grp"><label class="form-lbl">Период</label><select class="form-ctrl" id="g-pe"><option>I срок</option><option>II срок</option><option>Годишна</option></select></div></div>
+      <div class="form-grp" style="margin-bottom:10px;"><label class="form-lbl">Оценка</label>
+        <div class="grade-grid">
+          <button class="grade-opt" onclick="selGr(2,this)" style="color:#c62828;">2</button>
+          <button class="grade-opt" onclick="selGr(3,this)" style="color:#e65100;">3</button>
+          <button class="grade-opt" onclick="selGr(4,this)" style="color:#f57f17;">4</button>
+          <button class="grade-opt" onclick="selGr(5,this)" style="color:#1565c0;">5</button>
+          <button class="grade-opt" onclick="selGr(6,this)" style="color:#2e7d32;">6</button>
+        </div>
+      </div>
+      <div class="form-row c2"><div class="form-grp"><label class="form-lbl">Вид</label><select class="form-ctrl" id="g-ty"><option>Текуща</option><option>Контролна</option><option>Устна</option><option>Класна</option></select></div><div class="form-grp"><label class="form-lbl">Дата</label><input class="form-ctrl" type="date" id="g-da"></div></div>
+      <div class="form-row"><div class="form-grp"><label class="form-lbl">Бележка</label><input class="form-ctrl" id="g-no" placeholder="По желание..."></div></div>
+    </div>
+    <div class="modal-ft"><button class="btn btn-g" onclick="closeM('m-gr')">Отказ</button><button class="btn btn-p" onclick="addGrade()">✓ Запази</button></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="m-rem">
+  <div class="modal">
+    <div class="modal-hd"><span class="modal-title">💬 Добави запис</span><button class="modal-x" onclick="closeM('m-rem')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row"><div class="form-grp"><label class="form-lbl">Вид</label><div style="display:flex;gap:7px;">
+        <button class="btn btn-s btn-sm" id="rt-p" onclick="setRT('praise')">⭐ Похвала</button>
+        <button class="btn btn-g btn-sm" id="rt-r" onclick="setRT('remark')">⚠️ Забележка</button>
+        <button class="btn btn-g btn-sm" id="rt-n" onclick="setRT('note')">📝 Бележка</button>
+      </div></div></div>
+      <div class="form-row"><div class="form-grp"><label class="form-lbl">Ученик</label><select class="form-ctrl" id="r-s"></select></div></div>
+      <div class="form-row"><div class="form-grp"><label class="form-lbl">Предмет</label><select class="form-ctrl" id="r-sb"><option value="">Без предмет</option></select></div></div>
+      <div class="form-row"><div class="form-grp"><label class="form-lbl">Текст</label><textarea class="form-ctrl" id="r-tx" rows="3" placeholder="Опишете..."></textarea></div></div>
+      <div class="form-row"><div class="form-grp"><label class="form-lbl">Дата</label><input class="form-ctrl" type="date" id="r-da"></div></div>
+    </div>
+    <div class="modal-ft"><button class="btn btn-g" onclick="closeM('m-rem')">Отказ</button><button class="btn btn-p" onclick="addRem()">✓ Запази</button></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="m-msg">
+  <div class="modal">
+    <div class="modal-hd"><span class="modal-title">✉️ Ново съобщение</span><button class="modal-x" onclick="closeM('m-msg')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row"><div class="form-grp"><label class="form-lbl">До</label><select class="form-ctrl" id="ms-to"></select></div></div>
+      <div class="form-row"><div class="form-grp"><label class="form-lbl">Относно</label><input class="form-ctrl" id="ms-su" placeholder="Тема..."></div></div>
+      <div class="form-row"><div class="form-grp"><label class="form-lbl">Съобщение</label><textarea class="form-ctrl" id="ms-bo" rows="4" placeholder="Текст..."></textarea></div></div>
+    </div>
+    <div class="modal-ft"><button class="btn btn-g" onclick="closeM('m-msg')">Отказ</button><button class="btn btn-p" onclick="sendMsg()">📤 Изпрати</button></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="m-ann">
+  <div class="modal">
+    <div class="modal-hd"><span class="modal-title">📢 Ново обявление</span><button class="modal-x" onclick="closeM('m-ann')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row"><div class="form-grp"><label class="form-lbl">Заглавие</label><input class="form-ctrl" id="an-ti"></div></div>
+      <div class="form-row"><div class="form-grp"><label class="form-lbl">Текст</label><textarea class="form-ctrl" id="an-bo" rows="4"></textarea></div></div>
+      <div class="form-row"><div class="form-grp"><label class="form-lbl">Важност</label><select class="form-ctrl" id="an-im"><option>Нормална</option><option>Важно</option><option>Спешно</option></select></div></div>
+    </div>
+    <div class="modal-ft"><button class="btn btn-g" onclick="closeM('m-ann')">Отказ</button><button class="btn btn-p" onclick="addAnn()">📢 Публикувай</button></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="m-sbj">
+  <div class="modal">
+    <div class="modal-hd"><span class="modal-title">📖 Добави предмет</span><button class="modal-x" onclick="closeM('m-sbj')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row"><div class="form-grp"><label class="form-lbl">Название</label><input class="form-ctrl" id="sj-n" placeholder="Математика"></div></div>
+      <div class="form-row c2"><div class="form-grp"><label class="form-lbl">Учител</label><input class="form-ctrl" id="sj-t" placeholder="Трите имена"></div><div class="form-grp"><label class="form-lbl">Часове/сед.</label><input class="form-ctrl" id="sj-h" type="number" placeholder="4"></div></div>
+    </div>
+    <div class="modal-ft"><button class="btn btn-g" onclick="closeM('m-sbj')">Отказ</button><button class="btn btn-p" onclick="addSubj()">✓ Добави</button></div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──
+const COLORS=['#1976d2','#388e3c','#d32f2f','#7b1fa2','#e65100','#0097a7','#c2185b','#00796b','#5c6bc0','#f57c00'];
+let students=[
+  {id:1,fi:'Александър',la:'Георгиев',cls:'7А',em:'alex@mail.bg',ph:'+359 87 111 2233',p1:'Мария Георгиева',p2:'Петко Георгиев',ad:'ул. Роза 12'},
+  {id:2,fi:'Ивана',la:'Петрова',cls:'7А',em:'ivana@mail.bg',ph:'+359 88 222 3344',p1:'Елена Петрова',p2:'',ad:'бул. Мир 5'},
+  {id:3,fi:'Мартин',la:'Колев',cls:'7А',em:'martin@mail.bg',ph:'+359 89 333 4455',p1:'Стефан Колев',p2:'Тодора Колева',ad:'ул. Дружба 8'},
+  {id:4,fi:'Симона',la:'Димитрова',cls:'7А',em:'simona@mail.bg',ph:'+359 87 444 5566',p1:'Виктория Димитрова',p2:'',ad:'ж.к. Хладилника 3'},
+  {id:5,fi:'Борислав',la:'Тодоров',cls:'7А',em:'boris@mail.bg',ph:'+359 88 555 6677',p1:'Анна Тодорова',p2:'Тодор Тодоров',ad:'ул. Ален мак 15'},
+  {id:6,fi:'Кристина',la:'Стоянова',cls:'7А',em:'kris@mail.bg',ph:'+359 89 666 7788',p1:'Десислава Стоянова',p2:'',ad:'бул. Левски 22'},
+  {id:7,fi:'Даниел',la:'Иванов',cls:'7А',em:'daniel@mail.bg',ph:'+359 87 777 8899',p1:'Иванка Иванова',p2:'',ad:'ул. Шипка 3'},
+  {id:8,fi:'Николета',la:'Маринова',cls:'7А',em:'nikol@mail.bg',ph:'+359 88 888 9900',p1:'Стоян Маринов',p2:'Весела Маринова',ad:'бул. Сливница 10'},
+];
+let grades=[
+  {id:1,sid:1,sb:'Математика',gr:5,ty:'Контролна',pe:'I срок',da:'2025-01-15',te:'Иван Петров'},
+  {id:2,sid:2,sb:'Биология',gr:6,ty:'Текуща',pe:'I срок',da:'2025-01-16',te:'Мария Иванова'},
+  {id:3,sid:3,sb:'История',gr:4,ty:'Устна',pe:'I срок',da:'2025-01-17',te:'Петър Стоев'},
+  {id:4,sid:4,sb:'Математика',gr:6,ty:'Класна',pe:'I срок',da:'2025-01-18',te:'Иван Петров'},
+  {id:5,sid:5,sb:'Английски',gr:5,ty:'Текуща',pe:'I срок',da:'2025-01-19',te:'Стела Минчева'},
+  {id:6,sid:6,sb:'Химия',gr:3,ty:'Контролна',pe:'I срок',da:'2025-01-20',te:'Борис Нейков'},
+  {id:7,sid:7,sb:'Биология',gr:6,ty:'Текуща',pe:'I срок',da:'2025-01-21',te:'Мария Иванова'},
+  {id:8,sid:8,sb:'Математика',gr:4,ty:'Текуща',pe:'I срок',da:'2025-01-22',te:'Иван Петров'},
+];
+let remarks=[
+  {id:1,ty:'praise',sid:2,sb:'Биология',tx:'Отличен доклад на тема „Екосистеми".',da:'2025-01-16',te:'Мария Иванова'},
+  {id:2,ty:'remark',sid:5,sb:'',tx:'Не е изпълнил домашната работа за трети пореден път.',da:'2025-01-18',te:'Иван Петров'},
+  {id:3,ty:'praise',sid:4,sb:'Математика',tx:'Спечели III място на областската олимпиада!',da:'2025-01-20',te:'Иван Петров'},
+  {id:4,ty:'note',sid:3,sb:'',tx:'Ученикът закъсня 15 минути за час.',da:'2025-01-21',te:'Иван Петров'},
+  {id:5,ty:'remark',sid:6,sb:'Химия',tx:'Поведение нарушаващо учебния процес.',da:'2025-01-22',te:'Борис Нейков'},
+];
+let attendance={
+  '2025-01-20':{1:'present',2:'absent',3:'late',4:'present',5:'present',6:'present',7:'present',8:'excused'},
+  '2025-01-21':{1:'present',2:'present',3:'present',4:'absent',5:'late',6:'present',7:'present',8:'present'},
+  '2025-01-22':{1:'absent',2:'present',3:'present',4:'present',5:'present',6:'present',7:'late',8:'present'},
+};
+let messages=[
+  {id:1,fr:'Мария Георгиева',su:'Въпрос за оценката',bo:'Здравейте! Бих искала да разбера повече за последната контролна работа на Александър.',da:'2025-01-22',read:false},
+  {id:2,fr:'Стефан Колев',su:'Отсъствие на Мартин',bo:'Мартин е болен и няма да присъства 3 дни. Ще представи болничен.',da:'2025-01-21',read:true},
+];
+let announcements=[
+  {id:1,ti:'Родителска среща — 30 януари',bo:'На 30 януари от 18:00 ч. ще се проведе родителска среща.',im:'Важно',da:'2025-01-20'},
+  {id:2,ti:'Класна работа по Математика',bo:'На 25 януари ще се проведе класна работа по Математика. Материалът: глави 3 и 4.',im:'Нормална',da:'2025-01-18'},
+];
+let subjects=[
+  {id:1,nm:'Математика',te:'Иван Петров',ho:5,cl:'sc-math'},
+  {id:2,nm:'Български език',te:'Анна Вълкова',ho:4,cl:'sc-bg'},
+  {id:3,nm:'История',te:'Петър Стоев',ho:2,cl:'sc-hist'},
+  {id:4,nm:'Биология',te:'Мария Иванова',ho:2,cl:'sc-bio'},
+  {id:5,nm:'Химия',te:'Борис Нейков',ho:2,cl:'sc-chem'},
+  {id:6,nm:'Физика',te:'Стоян Йорданов',ho:3,cl:'sc-phys'},
+  {id:7,nm:'География',te:'Калина Стефанова',ho:2,cl:'sc-geo'},
+  {id:8,nm:'Английски',te:'Стела Минчева',ho:4,cl:'sc-eng'},
+  {id:9,nm:'ИТ',te:'Васил Нанев',ho:2,cl:'sc-it'},
+];
+const SCH=[
+  ['','Понеделник','Вторник','Сряда','Четвъртък','Петък'],
+  ['1·07:30','Математика','Биология','Математика','Физика','История'],
+  ['2·08:20','Английски','Математика','Биология','Математика','Химия'],
+  ['3·09:10','Български','История','Английски','Биология','Физика'],
+  ['4·10:10','Физика','Химия','Български','Английски','Математика'],
+  ['5·11:00','ИТ','Английски','История','Химия','Английски'],
+  ['6·11:50','География','Физика','ИТ','Български','Биология'],
+  ['7·12:40','','Български','','География','Български'],
+];
+
+// state
+let mcSt={}, mcGr={}, selGrade=null, curRemType='praise', remTab='all';
+
+// ── HELPERS ──
+const S=id=>students.find(s=>s.id===id);
+const gc=id=>COLORS[id%COLORS.length];
+const gi=s=>(s.fi[0]||'')+(s.la[0]||'');
+const fd=d=>{if(!d)return'';const p=d.split('-');return p[2]+'.'+p[1]+'.'+p[0];};
+const gbc=g=>'gb gb-'+Math.max(2,Math.min(6,Math.round(g)));
+const sAvg=sid=>{const gs=grades.filter(g=>g.sid===sid);return gs.length?(gs.reduce((a,b)=>a+b.gr,0)/gs.length).toFixed(1):null;};
+const sAbs=sid=>Object.values(attendance).reduce((c,d)=>c+(d[sid]==='absent'?1:0),0);
+const sPr=sid=>remarks.filter(r=>r.sid===sid&&r.ty==='praise').length;
+
+function toast(msg,ico='✅'){const t=document.getElementById('toast');t.textContent=ico+' '+msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400);}
+function openM(id){
+  document.getElementById(id).classList.add('open');
+  if(id==='m-save-confirm'){
+    const dk=document.getElementById('mc-date').value;
+    const lbl=document.getElementById('confirm-date-label');
+    if(lbl)lbl.textContent=dk?fd(dk):'избраната дата';
+  }
+}
+function closeM(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+function fill(id,opts){const el=document.getElementById(id);if(el)el.innerHTML=opts.map(o=>`<option value="${o.v}">${o.l}</option>`).join('');}
+
+// ── NAVIGATION ──
+const TITLES={dashboard:'Табло',students:'Ученици',myclass:'Моят час',grades:'Оценки',attendance:'Присъствия',schedule:'Разписание',remarks:'Похвали & Забележки',messages:'Съобщения',announcements:'Обявления',subjects:'Предмети',settings:'Настройки'};
+function nav(page,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  if(el)el.classList.add('active');
+  else document.querySelectorAll('.sb-item').forEach(n=>{if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+page+"'"))n.classList.add('active');});
+  document.getElementById('pageTitle').textContent=TITLES[page]||page;
+  ({dashboard:renderDash,students:renderStu,myclass:renderMC,grades:renderGrades,attendance:renderAtt,schedule:renderSch,remarks:()=>renderRem(remTab),messages:renderMsg,announcements:renderAnn,subjects:renderSubj}[page]||(() => {}))();
+}
+function quickAdd(){
+  const p=document.querySelector('.page.active')?.id.replace('page-','');
+  ({students:openAddStu,grades:openAddGrade,remarks:openAddRem,announcements:openNewAnn,messages:openNewMsg,subjects:openAddSubj}[p]||openAddStu)();
+}
+function handleSearch(v){if(document.getElementById('page-students').classList.contains('active'))renderStu(v);}
+
+// ── DASHBOARD ──
+function renderDash(){
+  document.getElementById('st-s').textContent=students.length;
+  const all=grades.map(g=>g.gr);
+  document.getElementById('st-a').textContent=all.length?(all.reduce((a,b)=>a+b,0)/all.length).toFixed(1):'—';
+  const tk=Object.keys(attendance).sort().pop()||'';
+  document.getElementById('st-ab').textContent=Object.values(attendance[tk]||{}).filter(v=>v==='absent').length;
+  const rc=remarks.filter(r=>r.ty==='remark').length;
+  document.getElementById('st-r').textContent=rc;
+  document.getElementById('remBadge').textContent=rc;
+
+  document.getElementById('dash-grades').innerHTML=grades.slice(-6).reverse().map(g=>{
+    const s=S(g.sid);if(!s)return'';
+    return `<tr><td><strong>${s.fi} ${s.la}</strong></td><td>${g.sb}</td><td><div class="${gbc(g.gr)}">${g.gr}</div></td><td style="color:var(--text2);font-size:11px;">${fd(g.da)}</td></tr>`;
+  }).join('');
+
+  const ico={praise:'⭐',remark:'⚠️',note:'📝'};
+  document.getElementById('dash-rem').innerHTML=remarks.slice(-4).reverse().map(r=>{
+    const s=S(r.sid);if(!s)return'';
+    return `<div class="rem-card ${r.ty}" style="cursor:pointer;font-size:11.5px;" onclick="nav('remarks',null)">
+      <div style="display:flex;justify-content:space-between;margin-bottom:2px;"><strong>${ico[r.ty]} ${s.fi} ${s.la}</strong><span style="font-size:10px;color:var(--text2)">${fd(r.da)}</span></div>
+      <div>${r.tx.substring(0,65)}${r.tx.length>65?'...':''}</div>
+    </div>`;
+  }).join('');
+
+  const ranked=[...students].map(s=>({s,avg:parseFloat(sAvg(s.id))||0,abs:sAbs(s.id),pr:sPr(s.id)})).sort((a,b)=>b.avg-a.avg);
+  document.getElementById('dash-rank').innerHTML=ranked.map((r,i)=>{
+    const m=i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1);
+    return `<tr><td><strong>${m}</strong></td><td><div style="display:flex;align-items:center;gap:7px;"><div style="width:24px;height:24px;border-radius:50%;background:${gc(r.s.id)};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;">${gi(r.s)}</div><strong>${r.s.fi} ${r.s.la}</strong></div></td><td>${r.s.cls}</td><td>${r.avg?`<span class="${gbc(r.avg)}">${r.avg}</span>`:'—'}</td><td><span class="badge ${r.abs>2?'bg-red':'bg-green'}">${r.abs}</span></td><td><span class="badge bg-blue">${r.pr}⭐</span></td></tr>`;
+  }).join('');
+}
+
+// ── STUDENTS ──
+function renderStu(filter=''){
+  const list=filter?students.filter(s=>(s.fi+' '+s.la).toLowerCase().includes(filter.toLowerCase())):students;
+  document.getElementById('stu-lbl').textContent=list.length+' ученика';
+  document.getElementById('stu-table').innerHTML=list.map(s=>{
+    const avg=sAvg(s.id),abs=sAbs(s.id);
+    return `<tr><td><div style="display:flex;align-items:center;gap:8px;"><div style="width:28px;height:28px;border-radius:50%;background:${gc(s.id)};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;">${gi(s)}</div><div><div style="font-weight:600;">${s.fi} ${s.la}</div><div style="font-size:10px;color:var(--text2)">${s.ad}</div></div></div></td>
+    <td><span class="badge bg-blue">${s.cls}</span></td>
+    <td style="font-size:11px;color:var(--text2)">${s.em}</td>
+    <td style="font-size:11px;color:var(--text2)">${[s.p1,s.p2].filter(Boolean).join(', ')}</td>
+    <td>${avg?`<span class="${gbc(avg)}">${avg}</span>`:'<span style="color:var(--text2)">—</span>'}</td>
+    <td><span class="badge ${abs>2?'bg-red':'bg-green'}">${abs}</span></td>
+    <td><span class="badge bg-green">Активен</span></td>
+    <td><button class="icon-btn" onclick="event.stopPropagation();delStu(${s.id})">🗑</button></td></tr>`;
+  }).join('');
+}
+function openAddStu(){['s-fi','s-la','s-em','s-ph','s-p1','s-p2','s-ad'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});openM('m-stu');}
+function addStu(){
+  const fi=document.getElementById('s-fi').value.trim(),la=document.getElementById('s-la').value.trim();
+  if(!fi||!la){toast('Въведете имена!','⚠️');return;}
+  students.push({id:Date.now(),fi,la,cls:document.getElementById('s-cl').value,em:document.getElementById('s-em').value,ph:document.getElementById('s-ph').value,p1:document.getElementById('s-p1').value,p2:document.getElementById('s-p2').value,ad:document.getElementById('s-ad').value});
+  closeM('m-stu');renderStu();renderDash();toast(fi+' '+la+' е добавен/а!','🎉');
+}
+function delStu(id){if(!confirm('Изтриване?'))return;students=students.filter(s=>s.id!==id);renderStu();renderDash();toast('Изтрит','🗑');}
+
+// ── МОЯТ ЧАС ──
+function renderMC(){
+  const se=document.getElementById('mc-subj');
+  if(se)se.innerHTML=subjects.map(s=>`<option value="${s.nm}">${s.nm}</option>`).join('');
+  const de=document.getElementById('mc-date');
+  if(de&&!de.value)de.value=new Date().toISOString().slice(0,10);
+  const saved=attendance[de?de.value:'']||{};
+  students.forEach(s=>{if(!mcSt[s.id])mcSt[s.id]=saved[s.id]||'present';if(mcGr[s.id]===undefined)mcGr[s.id]=null;});
+  mcRefresh();
+}
+function mcRefresh(){
+  let p=0,a=0,l=0,e=0;
+  students.forEach(s=>{const v=mcSt[s.id]||'present';if(v==='present')p++;else if(v==='absent')a++;else if(v==='late')l++;else e++;});
+  document.getElementById('mc-cp').textContent='✓ Присъства: '+p;
+  document.getElementById('mc-ca').textContent='✗ Отсъства: '+a;
+  document.getElementById('mc-cl').textContent='⏰ Закъснение: '+l;
+  document.getElementById('mc-ce').textContent='📋 Извинено: '+e;
+  document.getElementById('mc-abs').textContent=a;
+  document.getElementById('mc-tot').textContent=students.length+' ученика';
+
+  document.getElementById('mc-tbody').innerHTML=students.map((s,i)=>{
+    const st=mcSt[s.id]||'present';
+    const ta=sAbs(s.id);
+    const gv=mcGr[s.id];
+    const bg=st==='absent'?'#fff5f5':st==='late'?'#fffef0':st==='excused'?'#faf5ff':'#fff';
+    const attCls={present:'ap',absent:'aa',late:'al',excused:'ae'};
+    const attLbl={present:'✓ Присъства',absent:'✗ Отсъства',late:'⏰ Закъснение',excused:'📋 Извинено'};
+    const gc2=gv==6?'var(--green)':gv==5?'var(--blue)':gv==4?'#f57f17':gv>=2?'var(--red)':'var(--text2)';
+    return `<tr style="background:${bg};border-bottom:1px solid #eef0f3;">
+      <td style="padding:6px 10px;font-weight:600;color:var(--text2);font-size:11px;">${i+1}</td>
+      <td style="padding:6px 11px;"><div style="display:flex;align-items:center;gap:7px;">
+        <div style="width:26px;height:26px;border-radius:50%;background:${gc(s.id)};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0;">${gi(s)}</div>
+        <span style="font-weight:600;font-size:12px;">${s.fi} ${s.la}</span>
+      </div></td>
+      <td style="text-align:center;padding:5px 8px;"><span style="background:${ta>0?'#ffcdd2':'#f5f7fa'};color:${ta>0?'#c62828':'var(--text2)'};padding:2px 7px;border-radius:3px;font-size:10.5px;font-weight:700;">${ta}</span></td>
+      <td style="text-align:center;padding:5px 10px;">
+        <button class="att-btn ${attCls[st]}" onclick="mcCycle(${s.id})" title="Натисни за промяна">${attLbl[st]}</button>
+      </td>
+      <td style="text-align:center;padding:5px 8px;">
+        <select class="mc-gsel" onchange="mcSG(${s.id},this.value)" style="color:${gc2};">
+          <option value="">—</option>
+          ${[2,3,4,5,6].map(g=>`<option value="${g}" ${gv==g?'selected':''}>${g}</option>`).join('')}
+        </select>
+      </td>
+      <td style="text-align:center;padding:5px 8px;">
+        <div style="display:flex;gap:2px;justify-content:center;">
+          <button class="icon-btn" onclick="mcQR(${s.id},'praise')" title="Похвала">⭐</button>
+          <button class="icon-btn" onclick="mcQR(${s.id},'remark')" title="Забележка">⚠️</button>
+          <button class="icon-btn" onclick="mcQR(${s.id},'note')" title="Бележка">📝</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+function mcSS(sid,v){mcSt[sid]=v;mcRefresh();}
+function mcCycle(sid){
+  const order=['present','absent','late','excused'];
+  const cur=mcSt[sid]||'present';
+  const next=order[(order.indexOf(cur)+1)%order.length];
+  mcSt[sid]=next;
+  mcRefresh();
+}
+function mcSG(sid,v){mcGr[sid]=v?parseInt(v):null;mcRefresh();}
+function mcMarkAll(v){students.forEach(s=>{mcSt[s.id]=v;});mcRefresh();}
+function mcQR(sid,type){
+  curRemType=type;updRT();
+  fill('r-s',students.map(s=>({v:s.id,l:s.fi+' '+s.la})));
+  document.getElementById('r-s').value=sid;
+  const sb=document.getElementById('mc-subj')?document.getElementById('mc-subj').value:'';
+  document.getElementById('r-sb').innerHTML='<option value="">Без предмет</option>'+subjects.map(s=>`<option ${s.nm===sb?'selected':''}>${s.nm}</option>`).join('');
+  document.getElementById('r-da').value=document.getElementById('mc-date').value||new Date().toISOString().slice(0,10);
+  document.getElementById('r-tx').value='';
+  openM('m-rem');
+}
+function mcSave(){
+  const dk=document.getElementById('mc-date').value;
+  const sb=document.getElementById('mc-subj')?document.getElementById('mc-subj').value:'';
+  const tema=document.getElementById('mc-tema')?document.getElementById('mc-tema').value.trim():'';
+  if(!dk){toast('Изберете дата!','⚠️');return;}
+  const day={};students.forEach(s=>{day[s.id]=mcSt[s.id]||'present';});
+  attendance[dk]=day;
+  let gc2=0;
+  students.forEach(s=>{if(mcGr[s.id]){grades.push({id:Date.now()+s.id,sid:s.id,sb,gr:mcGr[s.id],ty:'Текуща',pe:'I срок',da:dk,te:'Иван Петров'});gc2++;}});
+  students.forEach(s=>{mcGr[s.id]=null;});mcRefresh();renderDash();
+  const temaMsg=tema?' · Тема: '+tema:'';
+  toast('Записано!'+(gc2?' · '+gc2+' оценки':'')+temaMsg,'💾');
+}
+
+// ── GRADES ──
+function renderGrades(){
+  const sf=document.getElementById('gf-s');
+  if(sf)sf.innerHTML='<option value="">Всички ученици</option>'+students.map(s=>`<option value="${s.id}">${s.fi} ${s.la}</option>`).join('');
+  const ss=[...new Set(grades.map(g=>g.sb))];
+  const sbf=document.getElementById('gf-sb');
+  if(sbf)sbf.innerHTML='<option value="">Всички предмети</option>'+ss.map(s=>`<option>${s}</option>`).join('');
+  renderGradesTable();
+}
+function renderGradesTable(){
+  let list=[...grades].reverse();
+  const sv=document.getElementById('gf-s')?.value,sbv=document.getElementById('gf-sb')?.value,pv=document.getElementById('gf-p')?.value;
+  if(sv)list=list.filter(g=>g.sid==sv);
+  if(sbv)list=list.filter(g=>g.sb===sbv);
+  if(pv)list=list.filter(g=>g.pe===pv);
+  document.getElementById('grades-table').innerHTML=list.map(g=>{
+    const s=S(g.sid);if(!s)return'';
+    return `<tr><td><div style="display:flex;align-items:center;gap:7px;"><div style="width:24px;height:24px;border-radius:50%;background:${gc(s.id)};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;">${gi(s)}</div><strong>${s.fi} ${s.la}</strong></div></td><td>${g.sb}</td><td><div class="${gbc(g.gr)}">${g.gr}</div></td><td><span class="badge bg-blue">${g.ty}</span></td><td>${g.pe}</td><td style="color:var(--text2);font-size:11px;">${fd(g.da)}</td><td style="font-size:11px;color:var(--text2)">${g.te}</td><td><button class="icon-btn" onclick="event.stopPropagation();delGr(${g.id})">🗑</button></td></tr>`;
+  }).join('');
+}
+function delGr(id){grades=grades.filter(g=>g.id!==id);renderGradesTable();toast('Изтрита','🗑');}
+function openAddGrade(){
+  selGrade=null;document.querySelectorAll('.grade-opt').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('g-no').value='';document.getElementById('g-da').value=new Date().toISOString().slice(0,10);
+  fill('g-s',students.map(s=>({v:s.id,l:s.fi+' '+s.la})));
+  fill('g-sb',subjects.map(s=>({v:s.nm,l:s.nm})));
+  openM('m-gr');
+}
+function selGr(v,el){selGrade=v;document.querySelectorAll('.grade-opt').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');}
+function addGrade(){
+  if(!selGrade){toast('Изберете оценка!','⚠️');return;}
+  grades.push({id:Date.now(),sid:parseInt(document.getElementById('g-s').value),sb:document.getElementById('g-sb').value,gr:selGrade,ty:document.getElementById('g-ty').value,pe:document.getElementById('g-pe').value,da:document.getElementById('g-da').value,te:'Иван Петров'});
+  closeM('m-gr');renderGradesTable();renderDash();toast('Оценката е добавена!','📊');
+}
+
+// ── ATTENDANCE ──
+function renderAtt(){
+  const dates=Object.keys(attendance).sort().reverse();
+  const el=document.getElementById('att-panel');
+  if(!dates.length){el.innerHTML='<div class="empty"><div class="empty-ico">📋</div><div>Използвайте "Моят час" за отбелязване.</div></div>';return;}
+  el.innerHTML=`<div class="tbl-wrap"><table><thead><tr><th>Ученик</th>${dates.map(d=>`<th style="text-align:center;">${fd(d)}</th>`).join('')}</tr></thead><tbody>${
+    students.map(s=>`<tr><td><div style="display:flex;align-items:center;gap:7px;"><div style="width:22px;height:22px;border-radius:50%;background:${gc(s.id)};display:flex;align-items:center;justify-content:center;font-size:8.5px;font-weight:700;color:#fff;">${gi(s)}</div><span style="font-weight:600;font-size:12px;">${s.fi} ${s.la}</span></div></td>${dates.map(d=>{
+      const v=attendance[d]?.[s.id]||'';
+      const lbl={present:'✓',absent:'✗',late:'⏰',excused:'📋'}[v]||'—';
+      const cl={present:'bg-green',absent:'bg-red',late:'',excused:'bg-purple'}[v]||'bg-gray';
+      return `<td style="text-align:center;"><span class="badge ${cl}" style="${v==='late'?'background:#fff9c4;color:#f57f17':''}">${lbl}</span></td>`;
+    }).join('')}</tr>`).join('')
+  }</tbody></table></div>`;
+}
+
+// ── SCHEDULE ──
+function renderSch(){
+  const SC={Математика:'sc-math','Български':'sc-bg',Биология:'sc-bio',История:'sc-hist',Химия:'sc-chem',Физика:'sc-phys',География:'sc-geo',Английски:'sc-eng',ИТ:'sc-it'};
+  let h=`<div style="display:grid;grid-template-columns:80px repeat(5,1fr);gap:1px;background:var(--border);border-radius:4px;overflow:hidden;">`;
+  SCH.forEach((row,ri)=>row.forEach((cell,ci)=>{
+    if(ri===0){h+=`<div class="sch-hd">${cell}</div>`;return;}
+    if(ci===0){h+=`<div class="sch-time">${cell}</div>`;return;}
+    h+=`<div class="sch-cell">${cell?`<div class="sch-subj ${SC[cell]||''}">${cell}</div>`:''}</div>`;
+  }));
+  h+='</div>';
+  document.getElementById('sch-grid').innerHTML=h;
+}
+
+// ── REMARKS ──
+function switchTab(t,el){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');remTab=t;renderRem(t);}
+function renderRem(t){
+  remTab=t;
+  let list=t==='all'?remarks:remarks.filter(r=>r.ty===t);
+  list=[...list].reverse();
+  const ico={praise:'⭐',remark:'⚠️',note:'📝'},lbl={praise:'Похвала',remark:'Забележка',note:'Бележка'};
+  const el=document.getElementById('rem-panel');
+  if(!list.length){el.innerHTML='<div class="empty"><div class="empty-ico">💬</div><div>Няма записи</div></div>';return;}
+  el.innerHTML=list.map(r=>{
+    const s=S(r.sid);if(!s)return'';
+    return `<div class="rem-card ${r.ty}"><div style="display:flex;align-items:flex-start;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;flex:1;">
+        <div style="width:24px;height:24px;border-radius:50%;background:${gc(s.id)};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0;">${gi(s)}</div>
+        <div><div style="font-weight:700;font-size:12px;">${s.fi} ${s.la}</div><div style="font-size:10px;color:var(--text2)">${ico[r.ty]} ${lbl[r.ty]}${r.sb?' · '+r.sb:''} · ${fd(r.da)} · ${r.te}</div></div>
+      </div>
+      <button class="icon-btn btn-xs" onclick="delRem(${r.id})">🗑</button>
+    </div><div style="font-size:12px;line-height:1.5;">${r.tx}</div></div>`;
+  }).join('');
+  document.getElementById('remBadge').textContent=remarks.filter(r=>r.ty==='remark').length;
+}
+function delRem(id){remarks=remarks.filter(r=>r.id!==id);renderRem(remTab);toast('Изтрито','🗑');}
+function openAddRem(){curRemType='praise';updRT();fill('r-s',students.map(s=>({v:s.id,l:s.fi+' '+s.la})));document.getElementById('r-sb').innerHTML='<option value="">Без предмет</option>'+subjects.map(s=>`<option>${s.nm}</option>`).join('');document.getElementById('r-da').value=new Date().toISOString().slice(0,10);document.getElementById('r-tx').value='';openM('m-rem');}
+function setRT(t){curRemType=t;updRT();}
+function updRT(){
+  document.getElementById('rt-p').className='btn btn-g btn-sm';
+  document.getElementById('rt-r').className='btn btn-g btn-sm';
+  document.getElementById('rt-n').className='btn btn-g btn-sm';
+  if(curRemType==='praise')document.getElementById('rt-p').className='btn btn-s btn-sm';
+  else if(curRemType==='remark')document.getElementById('rt-r').className='btn btn-d btn-sm';
+  else document.getElementById('rt-n').className='btn btn-p btn-sm';
+}
+function addRem(){
+  const tx=document.getElementById('r-tx').value.trim();
+  if(!tx){toast('Въведете текст!','⚠️');return;}
+  remarks.push({id:Date.now(),ty:curRemType,sid:parseInt(document.getElementById('r-s').value),sb:document.getElementById('r-sb').value,tx,da:document.getElementById('r-da').value,te:'Иван Петров'});
+  closeM('m-rem');renderRem(remTab);toast({praise:'Похвалата',remark:'Забележката',note:'Бележката'}[curRemType]+' е добавена!','💬');
+}
+
+// ── MESSAGES ──
+function renderMsg(){
+  document.getElementById('msg-list').innerHTML=messages.map(m=>`
+    <div onclick="viewMsg(${m.id})" style="padding:8px;border-radius:4px;border-bottom:1px solid var(--border);cursor:pointer;background:${m.read?'#fff':'#f0f7ff'};margin-bottom:2px;">
+      <div style="display:flex;justify-content:space-between;"><strong style="font-size:11.5px;">${m.fr}</strong><span style="font-size:10px;color:var(--text2)">${fd(m.da)}</span></div>
+      <div style="font-size:11.5px;font-weight:600;">${m.su}</div>
+      <div style="font-size:10.5px;color:var(--text2)">${m.bo.substring(0,45)}...</div>
+      ${!m.read?'<span class="badge bg-blue" style="margin-top:3px;">Ново</span>':''}
+    </div>`).join('');
+}
+function viewMsg(id){const m=messages.find(x=>x.id===id);if(!m)return;m.read=true;document.getElementById('msg-view').innerHTML=`<div style="font-size:14px;font-weight:700;margin-bottom:5px;">${m.su}</div><div style="font-size:10.5px;color:var(--text2);margin-bottom:10px;">От: <strong>${m.fr}</strong> · ${fd(m.da)}</div><div style="font-size:12.5px;line-height:1.6;">${m.bo}</div><div style="margin-top:12px;"><button class="btn btn-g btn-sm" onclick="toast('Изпратено','✉️')">↩ Отговори</button></div>`;renderMsg();}
+function openNewMsg(){fill('ms-to',students.map(s=>({v:s.id,l:s.fi+' '+s.la+' (родители)'})));document.getElementById('ms-su').value='';document.getElementById('ms-bo').value='';openM('m-msg');}
+function sendMsg(){const su=document.getElementById('ms-su').value.trim();if(!su){toast('Въведете тема!','⚠️');return;}messages.push({id:Date.now(),fr:'Иван Петров',su,bo:document.getElementById('ms-bo').value,da:new Date().toISOString().slice(0,10),read:true});closeM('m-msg');renderMsg();toast('Изпратено!','✉️');}
+
+// ── ANNOUNCEMENTS ──
+function renderAnn(){
+  const ib={Нормална:'bg-blue',Важно:'bg-orange',Спешно:'bg-red'};
+  document.getElementById('ann-panel').innerHTML=[...announcements].reverse().map(a=>`
+    <div class="card" style="margin-bottom:9px;"><div class="card-body" style="padding:12px 14px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+        <div><div style="font-size:13.5px;font-weight:700;margin-bottom:1px;">📢 ${a.ti}</div><div style="font-size:10.5px;color:var(--text2);">${fd(a.da)}</div></div>
+        <div style="display:flex;gap:5px;align-items:center;"><span class="badge ${ib[a.im]||'bg-blue'}">${a.im}</span><button class="icon-btn" onclick="delAnn(${a.id})">🗑</button></div>
+      </div>
+      <div style="font-size:12.5px;line-height:1.5;">${a.bo}</div>
+    </div></div>`).join('');
+}
+function openNewAnn(){document.getElementById('an-ti').value='';document.getElementById('an-bo').value='';openM('m-ann');}
+function addAnn(){const ti=document.getElementById('an-ti').value.trim();if(!ti){toast('Въведете заглавие!','⚠️');return;}announcements.push({id:Date.now(),ti,bo:document.getElementById('an-bo').value,im:document.getElementById('an-im').value,da:new Date().toISOString().slice(0,10)});closeM('m-ann');renderAnn();toast('Публикувано!','📢');}
+function delAnn(id){announcements=announcements.filter(a=>a.id!==id);renderAnn();toast('Изтрито','🗑');}
+
+// ── SUBJECTS ──
+function renderSubj(){
+  document.getElementById('subj-grid').innerHTML=subjects.map(s=>{
+    const gs=grades.filter(g=>g.sb===s.nm);
+    const avg=gs.length?(gs.reduce((a,b)=>a+b.gr,0)/gs.length).toFixed(1):'—';
+    return `<div class="card"><div class="card-body" style="padding:12px 14px;">
+      <div class="badge ${s.cl}" style="margin-bottom:7px;font-size:12px;padding:3px 8px;">${s.nm}</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:7px;">👨‍🏫 ${s.te}</div>
+      <div style="display:flex;gap:5px;"><span class="badge bg-blue">${s.ho} ч/сед.</span>${avg!=='—'?`<span class="badge bg-green">Ср: ${avg}</span>`:''}</div>
+    </div></div>`;
+  }).join('');
+}
+function openAddSubj(){document.getElementById('sj-n').value='';document.getElementById('sj-t').value='';document.getElementById('sj-h').value='';openM('m-sbj');}
+function addSubj(){const nm=document.getElementById('sj-n').value.trim();if(!nm){toast('Въведете название!','⚠️');return;}const cls=['sc-math','sc-bg','sc-hist','sc-bio','sc-chem','sc-phys','sc-geo','sc-eng','sc-it'];subjects.push({id:Date.now(),nm,te:document.getElementById('sj-t').value,ho:parseInt(document.getElementById('sj-h').value)||2,cl:cls[subjects.length%cls.length]});closeM('m-sbj');renderSubj();toast('Добавен!','📖');}
+
+// ── INIT ──
+renderDash();
+</script>
+</body>
+</html>
